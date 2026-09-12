@@ -44,6 +44,7 @@ class PostSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "author", "created_at", "updated_at")
 
+
 class PostDetailSerializer(PostSerializer):
     comments = CommentSerializer(many=True, read_only=True)
 
