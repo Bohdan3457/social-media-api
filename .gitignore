@@ -1,13 +1,18 @@
-echo ".venv/" >> .gitignore
-echo "*.pyc" >> .gitignore
-echo "__pycache__/" >> .gitignore
-echo "db.sqlite3" >> .gitignore
-echo ".idea/" >> .gitignore
-echo ".vscode/" >> .gitignore
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+*.sqlite3
 db.sqlite3
-.idea/
+media/
+
+.env
 .venv/
 venv/
-echo ".env" >> .gitignore
+ENV/
+
+.idea/
+.vscode/
+*.swp
+*.swo

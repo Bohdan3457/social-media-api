@@ -3,13 +3,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from posts.models import Like, Post
+from posts.models import Post
 from posts.permission import IsAuthorOrReadOnly
 from posts.serializers import (
     CommentSerializer,
-    LikeSerializer,
     PostDetailSerializer,
-    PostSerializer,
+    PostSerializer
 )
 
 
@@ -36,22 +35,31 @@ class PostViewSet(viewsets.ModelViewSet):
     def feed(self, request):
         following_users = request.user.following.all()
         posts = Post.objects.filter(author__in=following_users).order_by("-created_at")
+
+        page = self.paginate_queryset(posts)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(posts, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"], url_path="like")
+    @action(detail=True, methods=["POST"])
     def like_toggle(self, request, pk=None):
         post = self.get_object()
-        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        user = request.user
 
-        if not created:
-            like.delete()
-            return Response(
-                {"detail": "Like removed."}, status=status.HTTP_204_NO_CONTENT
-            )
+        if user in post.likes.all():
+            post.likes.remove(user)
+            liked = False
+        else:
+            post.likes.add(user)
+            liked = True
 
-        serializer = LikeSerializer(like)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            {"liked": liked, "message": "Successfully toggled like."},
+            status=status.HTTP_200_OK
+        )
 
     @action(detail=True, methods=["post"], url_path="comment")
     def add_comment(self, request, pk=None):
